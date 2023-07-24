@@ -9,12 +9,11 @@ import { BsPlusCircleFill } from 'react-icons/bs'
 import { AiOutlineCheck } from 'react-icons/ai'
 import Swal from 'sweetalert2';
 import * as yup from "yup";
+import { getToken } from '@/helpers/Generales';
 
 function Maestros() {
 
     let oCall = new Call();
-
-    let token = 'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJpdmFuQGhvdG1haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU0EiLCJleHAiOjE2OTAxODA2OTV9.kYm30e78RFanxH_YQf1hzFANTzkEcXrZx92NSS8SpK6O67RqgOrfxjm4LenUQbuti_t43DYDNUl-N2FP25tTPg'
 
     const validation = yup.object().shape({
         nombre: yup.string()
@@ -44,11 +43,25 @@ function Maestros() {
         materia: ""
     }
 
+    let objEditUser = {
+        idUser: '',
+        nombre: "",
+        apellido: "",
+        telefono: "",
+        correo: "",
+        imagen: "",
+        rol: "",
+        materia: ""
+    }
+
     const [usuario, setUsuario] = useState(objUser)
+    const [editusuario, setEditUsuario] = useState(objEditUser)
     const [usuarios, setUsuarios] = useState([])
 
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showSecondModal, setShowSecondModal] = useState(false);
+
 
     const handleOpenModal = () => {
         setShowModal(true);
@@ -58,9 +71,17 @@ function Maestros() {
         setShowModal(false);
     };
 
+    const handleOpenSecondModal = () => {
+        setShowSecondModal(true);
+    };
+
+    const handleCloseSecondModal = () => {
+        setShowSecondModal(false);
+    };
+
 
     function GetAll() {
-        oCall.cenisFetch("GET", `User`, null, null).then(response => {
+        oCall.cenisFetch("GET", `User`, getToken(), null).then(response => {
             if (response.status === 200) {
                 setUsuarios(response.Data)
                 setLoading(false)
@@ -72,7 +93,7 @@ function Maestros() {
     }
 
     function Save(values, actions) {
-        oCall.cenisFetch("POST", `Auth/register`, null, values).then(response => {
+        oCall.cenisFetch("POST", `Auth/register`, getToken(), values).then(response => {
             if (response.status === 201) {
                 SuccessAlert("Registro guardado correctamente.");
                 handleCloseModal();
@@ -87,13 +108,13 @@ function Maestros() {
     }
 
     function Edit(ID) {
-        oCall.cenisFetch("GET", `User/${ID}`, null, null).then(response => {
+        handleOpenSecondModal();
+        oCall.cenisFetch("GET", `User/${ID}`, getToken(), null).then(response => {
             console.log(response);
             if (response.status === 200) {
-                handleOpenModal();
-                setUsuario({
-                    ...usuario,
-                    password: response.Data.password,
+                setEditUsuario({
+                    ...editusuario,
+                    idUser: response.Data.idUser,
                     nombre: response.Data.nombre,
                     apellido: response.Data.apellido,
                     telefono: response.Data.telefono,
@@ -110,8 +131,25 @@ function Maestros() {
         });
     }
 
+    function EditUser(values, actions) {
+        console.log(values);
+        oCall.cenisFetch("PUT", `User`, getToken(), values).then(response => {
+            console.log(response);
+            if (response.status === 200) {
+                SuccessAlert("Registro actualizado correctamente.");
+                handleCloseSecondModal();
+                GetAll();
+            }
+            else {
+                ErrorAlert("Ocurrió un error al actualizar el registro.");
+            }
+        }).catch((err) => {
+            ErrorAlert("Ocurrió un error al actualizar el registro.");
+        });
+    }
+
     function Delete(ID) {
-        oCall.cenisFetch("DELETE", `User/${ID}`, token, null).then(response => {
+        oCall.cenisFetch("DELETE", `User/${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro desactivado correctamente.")
                 GetAll();
@@ -125,7 +163,7 @@ function Maestros() {
     }
 
     function Activate(ID) {
-        oCall.cenisFetch("PUT", `User/${ID}`, token, null).then(response => {
+        oCall.cenisFetch("PUT", `User/${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro activado correctamente.");
                 GetAll();
@@ -171,7 +209,7 @@ function Maestros() {
                         showModal={showModal}
                         onSave={Save}
                         onClose={handleCloseModal}
-                        title="Catálogo Maestros">
+                        title="Agregar Usuario">
                         <Formik
                             initialValues={usuario}
                             validationSchema={validation}
@@ -267,7 +305,7 @@ function Maestros() {
                                             name="password"
                                         />
                                         <div className="invalid-feedback">
-                                            {errors.telefono}
+                                            {errors.password}
                                         </div>
                                         <label htmlFor="recipient-name" className="col-form-label">
                                             Rol:
@@ -280,8 +318,8 @@ function Maestros() {
                                             id="rol"
                                             name="rol">
                                             <option value={""}>Selecciona una opción</option>
-                                            <option value={"Maestro"}>Maestro</option>
-                                            <option value={"Administrador"}>Administrador</option>
+                                            <option value={"Teacher"}>Maestro</option>
+                                            <option value={"Admin"}>Administrador</option>
                                         </select>
                                         <div className="invalid-feedback">
                                             {errors.rol}
@@ -295,6 +333,7 @@ function Maestros() {
                                             onBlur={handleBlur}
                                             onChange={handleChange}
                                             value={values.materia}
+                                            disabled={values.rol === "Teacher" ? false : true}
                                             className={`form-control form-control-sm ${errors.materia && touched.materia ? 'is-invalid' : ''}`}
                                             id="materia"
                                             name="materia"
@@ -306,6 +345,137 @@ function Maestros() {
                                     <br />
                                     <div className="d-grid gap-2 d-md-flex justify-content-md-end">
                                         <a className="btn btn-secondary me-md-2" type="button" onClick={handleCloseModal}>Cerrar</a>
+                                        <button className="btn btn-success" type="submit">Guardar</button>
+                                    </div>
+                                </form>
+                            }
+                        </Formik>
+                    </CustomModal>
+
+                    <CustomModal
+                        showModal={showSecondModal}
+                        onSave={EditUser}
+                        onClose={handleCloseSecondModal}
+                        title="Editar Usuario">
+                        <Formik
+                            initialValues={editusuario}
+                            validationSchema={''}
+                            enableReinitialize={true}
+                            onSubmit={(values, actions) => {
+                                EditUser(values, actions)
+                            }}>
+                            {({
+                                values,
+                                errors,
+                                handleBlur,
+                                handleChange,
+                                handleSubmit,
+                                touched,
+                            }) =>
+                                <form onSubmit={handleSubmit}>
+                                    <div className="form-group">
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Nombre:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={100}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.nombre}
+                                            className={`form-control form-control-sm ${errors.nombre && touched.nombre ? 'is-invalid' : ''}`}
+                                            id="nombre"
+                                            name="nombre"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.nombre}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Apellido:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={100}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.apellido}
+                                            className={`form-control form-control-sm ${errors.apellido && touched.apellido ? 'is-invalid' : ''}`}
+                                            id="apellido"
+                                            name="apellido"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.apellido}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Telefóno:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={10}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.telefono}
+                                            className={`form-control form-control-sm ${errors.telefono && touched.telefono ? 'is-invalid' : ''}`}
+                                            id="telefono"
+                                            name="telefono"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.telefono}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Correo electrónico:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={100}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.correo}
+                                            className={`form-control form-control-sm ${errors.correo && touched.correo ? 'is-invalid' : ''}`}
+                                            id="correo"
+                                            name="correo"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.correo}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Rol:
+                                        </label>
+                                        <select
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.rol}
+                                            className={`form-select form-select-sm ${errors.rol && touched.rol ? 'is-invalid' : ''}`}
+                                            id="rol"
+                                            name="rol">
+                                            <option value={""}>Selecciona una opción</option>
+                                            <option value={"Teacher"}>Maestro</option>
+                                            <option value={"Admin"}>Administrador</option>
+                                        </select>
+                                        <div className="invalid-feedback">
+                                            {errors.rol}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
+                                            Materia:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={50}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.materia}
+                                            disabled={values.rol === "Teacher" ? false : true}
+                                            className={`form-control form-control-sm ${errors.materia && touched.materia ? 'is-invalid' : ''}`}
+                                            id="materia"
+                                            name="materia"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.materia}
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <div className="d-grid gap-2 d-md-flex justify-content-md-end">
+                                        <a className="btn btn-secondary me-md-2" type="button" onClick={handleCloseSecondModal}>Cerrar</a>
                                         <button className="btn btn-success" type="submit">Guardar</button>
                                     </div>
                                 </form>

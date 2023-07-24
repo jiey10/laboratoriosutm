@@ -1,3 +1,4 @@
+import { clearLocalStorage } from "@/helpers/Generales"
 import { useRouter } from "next/router"
 import { BiHome, BiUser, BiBuildings, BiKey, BiLogOut } from 'react-icons/bi'
 
@@ -5,6 +6,11 @@ import { BiHome, BiUser, BiBuildings, BiKey, BiLogOut } from 'react-icons/bi'
 export default function Sidebar({ children }) {
 
     const router = useRouter();
+
+    const handleClearLocalStorage = () => {
+        clearLocalStorage();
+        router.push("/")
+    };
 
     return (
         <div id="wrapper">
@@ -21,14 +27,13 @@ export default function Sidebar({ children }) {
                         <a href="/maestros/maestros"><BiUser style={{ margin: '5px', marginBottom: '10px' }} />Maestros</a>
                     </li>
                     <li>
-
                         <a href="/salones/salones"><BiBuildings style={{ margin: '5px', marginBottom: '10px' }} />Salones</a>
                     </li>
                     <li>
                         <a href="/llaves/llaves"><BiKey style={{ margin: '5px', marginBottom: '10px' }} />Llaves</a>
                     </li>
                     <li>
-                        <a href="/"><BiLogOut style={{ margin: '5px', marginBottom: '10px' }} />Cerrar Sesión</a>
+                        <a href="/"><BiLogOut style={{ margin: '5px', marginBottom: '10px' }} onClick={() => handleClearLocalStorage()} />Cerrar Sesión</a>
                     </li>
                 </ul>
             </div>

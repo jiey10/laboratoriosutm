@@ -1,7 +1,20 @@
+import { getDataFromLocalStorage } from '@/helpers/Generales';
 import React from 'react'
 import { CiMenuBurger } from 'react-icons/ci'
 
 function Header() {
+
+    function getName() {
+        let completeName = ""
+        if (typeof window !== 'undefined') {
+            const name = localStorage.getItem('nombre')
+            const lastname = localStorage.getItem('apellido')
+            const completeName = name + ' ' + lastname;
+            return completeName;
+        }
+        return completeName;
+    }
+
 
     const handleClick = (e) => {
         e.preventDefault();
@@ -18,7 +31,8 @@ function Header() {
                 <button className='btn' id="menu-toggle" onClick={handleClick}>
                     <CiMenuBurger />
                 </button>
-                <h3>Universidad Tecnológica Metropolitana</h3>
+                <h4>Universidad Tecnológica Metropolitana</h4>
+                <h6>Bienvenido: </h6>
             </div>
         </nav>
     )

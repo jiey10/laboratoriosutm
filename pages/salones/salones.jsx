@@ -9,12 +9,14 @@ import { BsPlusCircleFill } from 'react-icons/bs'
 import { AiOutlineCheck } from 'react-icons/ai'
 import Swal from 'sweetalert2';
 import * as yup from "yup";
+import { getToken } from '@/helpers/Generales';
+import { useRouter } from 'next/router';
 
 function Salones() {
 
     let oCall = new Call();
 
-    let token = 'eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNobWFjLXNoYTUxMiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJpdmFuQGhvdG1haWwuY29tIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiU0EiLCJleHAiOjE2OTAxODA2OTV9.kYm30e78RFanxH_YQf1hzFANTzkEcXrZx92NSS8SpK6O67RqgOrfxjm4LenUQbuti_t43DYDNUl-N2FP25tTPg'
+    const router = useRouter();
 
     const validation = yup.object().shape({
         idKey: yup.number()
@@ -47,7 +49,7 @@ function Salones() {
     };
 
     function GetAllKeys() {
-        oCall.cenisFetch("GET", `Key/pub`, null, null).then(response => {
+        oCall.cenisFetch("GET", `Key/UnUsedKeys`, getToken(), null).then(response => {
             if (response.status === 200) {
                 setLlaves(response.Data)
                 setLoading(false)
@@ -59,7 +61,7 @@ function Salones() {
     }
 
     function GetAll() {
-        oCall.cenisFetch("GET", `Classroom`, null, null).then(response => {
+        oCall.cenisFetch("GET", `Classroom`, getToken(), null).then(response => {
             if (response.status === 200) {
                 setSalones(response.Data)
                 setLoading(false)
@@ -71,9 +73,9 @@ function Salones() {
     }
 
     function Save(values, actions) {
-        oCall.cenisFetch("POST", `Classroom`, token, values).then(response => {
+        oCall.cenisFetch("POST", `Classroom/CreateUpdateClassroom`, getToken(), values).then(response => {
             console.log(response);
-            if (response.status === 201) {
+            if (response.status === 200) {
                 SuccessAlert("Registro guardado correctamente.");
                 handleCloseModal();
                 GetAll();
@@ -88,7 +90,7 @@ function Salones() {
     }
 
     function Edit(ID) {
-        oCall.cenisFetch("GET", `Classroom/${ID}`, null, null).then(response => {
+        oCall.cenisFetch("GET", `Classroom/${ID}`, getToken(), null).then(response => {
             console.log(response);
             if (response.status === 200) {
                 handleOpenModal();
@@ -108,7 +110,7 @@ function Salones() {
     }
 
     function Delete(ID) {
-        oCall.cenisFetch("DELETE", `Classroom/${ID}`, token, null).then(response => {
+        oCall.cenisFetch("DELETE", `Classroom/${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro desactivado correctamente.")
                 GetAll();
@@ -122,7 +124,7 @@ function Salones() {
     }
 
     function Activate(ID) {
-        oCall.cenisFetch("PUT", `Classroom/${ID}`, token, null).then(response => {
+        oCall.cenisFetch("PUT", `Classroom/${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro activado correctamente.");
                 GetAll();
@@ -155,10 +157,17 @@ function Salones() {
         });
     };
 
+    function validateUser(){
+        let token = getToken();
+        if(token === "" || token === null || token === undefined){
+            router.push("/")
+        }
+    }
 
     useEffect(() => {
         GetAll();
         GetAllKeys();
+        validateUser();
     }, [])
 
     return (
