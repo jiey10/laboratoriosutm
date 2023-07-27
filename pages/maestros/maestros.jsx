@@ -9,7 +9,8 @@ import { BsPlusCircleFill } from 'react-icons/bs'
 import { AiOutlineCheck } from 'react-icons/ai'
 import Swal from 'sweetalert2';
 import * as yup from "yup";
-import { getToken } from '@/helpers/Generales';
+import { getToken, validateUser } from '@/helpers/Generales';
+import Head from 'next/head';
 
 function Maestros() {
 
@@ -110,7 +111,6 @@ function Maestros() {
     function Edit(ID) {
         handleOpenSecondModal();
         oCall.cenisFetch("GET", `User/${ID}`, getToken(), null).then(response => {
-            console.log(response);
             if (response.status === 200) {
                 setEditUsuario({
                     ...editusuario,
@@ -132,9 +132,7 @@ function Maestros() {
     }
 
     function EditUser(values, actions) {
-        console.log(values);
         oCall.cenisFetch("PUT", `User`, getToken(), values).then(response => {
-            console.log(response);
             if (response.status === 200) {
                 SuccessAlert("Registro actualizado correctamente.");
                 handleCloseSecondModal();
@@ -148,22 +146,22 @@ function Maestros() {
         });
     }
 
-    function Delete(ID) {
-        oCall.cenisFetch("DELETE", `User/${ID}`, getToken(), null).then(response => {
+    function Disable(ID) {
+        oCall.cenisFetch("PUT", `User/EnableDisableUser${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
-                SuccessAlert("Registro desactivado correctamente.")
+                SuccessAlert("Registro desactivado correctamente.");
                 GetAll();
             }
             else {
-                ErrorAlert("Ocurrió un error al desactivar el registro.");
+                ErrorAlert("Ocurrió un error al desactivar el registro.")
             }
         }).catch((err) => {
-            ErrorAlert("Ocurrió un error al desactivar el registro.");
+            ErrorAlert("Ocurrió un error al desactivar el registro.")
         });
     }
 
     function Activate(ID) {
-        oCall.cenisFetch("PUT", `User/${ID}`, getToken(), null).then(response => {
+        oCall.cenisFetch("PUT", `User/EnableDisableUser${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro activado correctamente.");
                 GetAll();
@@ -199,10 +197,15 @@ function Maestros() {
 
     useEffect(() => {
         GetAll();
+        validateUser(getToken());
     }, [])
 
     return (
         <>
+            <Head>
+                <title>Maestros</title>
+                <link rel="icon" href="https://www.utmetropolitana.edu.mx/Publicaciones/recursos/BotonImagen/logo%20UTM-01.png" />
+            </Head>
             {loading ? <Loader /> :
                 <Layout>
                     <CustomModal
@@ -516,12 +519,17 @@ function Maestros() {
                                                     <td>{usuario.nombre} {usuario.apellido}</td>
                                                     <td>{usuario.correo}</td>
                                                     <td>{usuario.telefono}</td>
-                                                    <td>{usuario.rol}</td>
                                                     {
                                                         usuario.isDisabled === true ?
                                                             <td>Inactivo</td>
                                                             :
                                                             <td>Activo</td>
+                                                    }
+                                                    {
+                                                        usuario.rol === 'Admin' ?
+                                                            <td>Administrador</td>
+                                                            :
+                                                            <td>Maestro</td>
                                                     }
                                                     {
                                                         usuario.isDisabled === true ?
@@ -531,15 +539,21 @@ function Maestros() {
                                                                 </div>
                                                             </td>
                                                             :
-                                                            <td>
-                                                                <div className="d-grid gap-2 d-md-flex justify-content-md">
-                                                                    <a className='btn btn-primary' onClick={() => Edit(usuario.idUser)}><BiEditAlt /></a>
-                                                                    <a className='btn btn-danger' onClick={() => Delete(usuario.idUser)}><BiTrash /></a>
-                                                                </div>
-                                                            </td>
+                                                            usuario.rol === 'Admin' ?
+                                                                <td>
+                                                                    <div className="d-grid gap-2 d-md-flex justify-content-md">
+                                                                        <a className='btn btn-primary' onClick={() => Edit(usuario.idUser)}><BiEditAlt /></a>
+                                                                    </div>
+                                                                </td>
+                                                                :
+                                                                <td>
+                                                                    <div className="d-grid gap-2 d-md-flex justify-content-md">
+                                                                        <a className='btn btn-primary' onClick={() => Edit(usuario.idUser)}><BiEditAlt /></a>
+                                                                        <a className='btn btn-danger' onClick={() => Disable(usuario.idUser)}><BiTrash /></a>
+                                                                    </div>
+                                                                </td>
+
                                                     }
-
-
                                                 </tr>
                                             )
                                         })}

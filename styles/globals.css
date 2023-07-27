@@ -31,7 +31,7 @@ body {
   height: 100%;
   margin-left: -250px;
   overflow-y: auto;
-  background: green;
+  background: rgb(0, 171, 120);
   -webkit-transition: all 0.5s ease;
   -moz-transition: all 0.5s ease;
   -o-transition: all 0.5s ease;
@@ -285,9 +285,50 @@ body {
   width: 100%;
   height: 100vh;
   /* background: rgb(183, 252, 183); */
-  background: linear-gradient(rgb(189, 255, 189) 50%, rgb(22, 165, 22) 50%);
+  background: linear-gradient(rgb(189, 255, 189) 50%, rgb(0, 150, 110));
 }
 
 .header-style{
-  background: green;
+  background: rgb(0, 171, 120);
+}
+
+
+.dropbtn {
+  background-color: rgb(0, 171, 120);
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: rgb(227, 227, 227);
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: rgb(184, 182, 182)}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: rgb(0, 150, 110);
 }

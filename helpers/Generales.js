@@ -1,4 +1,23 @@
+import { BehaviorSubject } from "rxjs";
+import Router from 'next/router';
 
+const userSubject = new BehaviorSubject(process.browser && localStorage.getItem('nombre'));
+
+export const userService = {
+    user: userSubject.asObservable(),
+    get userValue() { return userSubject.value },
+    logout,
+}
+
+function logout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('id');
+    localStorage.removeItem('nombre');
+    localStorage.removeItem('apellido');
+    localStorage.removeItem('rol');
+    localStorage.removeItem('isDisabled');
+    Router.push('/');
+}
 
 export function getToken() {
     let token = ""
@@ -9,33 +28,19 @@ export function getToken() {
     return token;
 }
 
-export const saveDataToLocalStorage = (token, firstName, lastName, rol, isDisabled) => {
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('token', token);
-        localStorage.setItem('firstName', firstName);
-        localStorage.setItem('lastName', lastName);
-        localStorage.setItem('rol', rol);
-        localStorage.setItem('isDisabled', isDisabled);
+
+export function validateUser(token) {
+    if (token === "" || token === null) {
+        Router.push("/")
     }
-};
+}
 
 
-export const getDataFromLocalStorage = () => {
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('token');
-        const firstName = localStorage.getItem('firstName');
-        const lastName = localStorage.getItem('lastName');
-        const rol = localStorage.getItem('rol');
-        const isDisabled = localStorage.getItem('isDisabled');
+export const getCurrentTime = () => {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
 
-        // Imprime los datos en la consola para verificar que son correctos
-        console.log('Datos del Local Storage:', { token, firstName, lastName, rol, isDisabled });
-
-        return { token, firstName, lastName, rol, isDisabled };
-    }
-};
-
-
-export const clearLocalStorage = () => {
-    localStorage.clear();
+    return `${hours}:${minutes}:${seconds}`;
 };

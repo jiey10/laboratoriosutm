@@ -9,7 +9,8 @@ import { BsPlusCircleFill } from 'react-icons/bs'
 import { AiOutlineCheck } from 'react-icons/ai'
 import Swal from 'sweetalert2';
 import * as yup from "yup";
-import { getToken } from '@/helpers/Generales';
+import { getToken, validateUser } from '@/helpers/Generales';
+import Head from 'next/head';
 
 function Llaves() {
 
@@ -65,7 +66,6 @@ function Llaves() {
 
     function Save(values, actions) {
         oCall.cenisFetch("POST", `Key/AddUpdateKey`, getToken(), values).then(response => {
-            console.log(response);
             if (response.status === 200) {
                 SuccessAlert("Registro guardado correctamente.");
                 handleCloseModal();
@@ -100,7 +100,7 @@ function Llaves() {
     }
 
     function Delete(ID) {
-        oCall.cenisFetch("DELETE", `Key/${ID}`, getToken(), null).then(response => {
+        oCall.cenisFetch("PUT", `Key/EnableDisableKey${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro desactivado correctamente.")
                 GetAll();
@@ -114,7 +114,7 @@ function Llaves() {
     }
 
     function Activate(ID) {
-        oCall.cenisFetch("PUT", `Key/${ID}`, getToken(), null).then(response => {
+        oCall.cenisFetch("PUT", `Key/EnableDisableKey${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro activado correctamente.");
                 GetAll();
@@ -147,15 +147,20 @@ function Llaves() {
         });
     };
 
-    
+
 
 
     useEffect(() => {
         GetAll();
+        validateUser(getToken());
     }, [])
 
     return (
         <>
+            <Head>
+                <title>Llaves</title>
+                <link rel="icon" href="https://www.utmetropolitana.edu.mx/Publicaciones/recursos/BotonImagen/logo%20UTM-01.png" />
+            </Head>
             {loading ? <Loader /> :
                 <Layout>
                     <CustomModal

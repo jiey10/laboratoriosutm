@@ -9,8 +9,9 @@ import { BsPlusCircleFill } from 'react-icons/bs'
 import { AiOutlineCheck } from 'react-icons/ai'
 import Swal from 'sweetalert2';
 import * as yup from "yup";
-import { getToken } from '@/helpers/Generales';
+import { getToken, validateUser } from '@/helpers/Generales';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 
 function Salones() {
 
@@ -31,6 +32,7 @@ function Salones() {
         idClassroom: 0,
         idKey: "",
         descripcion: "",
+        nombre: "",
     }
 
     const [salon, setSalon] = useState(objSalon)
@@ -74,7 +76,6 @@ function Salones() {
 
     function Save(values, actions) {
         oCall.cenisFetch("POST", `Classroom/CreateUpdateClassroom`, getToken(), values).then(response => {
-            console.log(response);
             if (response.status === 200) {
                 SuccessAlert("Registro guardado correctamente.");
                 handleCloseModal();
@@ -91,7 +92,6 @@ function Salones() {
 
     function Edit(ID) {
         oCall.cenisFetch("GET", `Classroom/${ID}`, getToken(), null).then(response => {
-            console.log(response);
             if (response.status === 200) {
                 handleOpenModal();
                 setSalon({
@@ -99,6 +99,7 @@ function Salones() {
                     idClassroom: response.Data.idClassroom,
                     idKey: response.Data.idKey,
                     descripcion: response.Data.descripcion,
+                    nombre: response.Data.nombre,
                 })
             }
             else {
@@ -109,8 +110,8 @@ function Salones() {
         });
     }
 
-    function Delete(ID) {
-        oCall.cenisFetch("DELETE", `Classroom/${ID}`, getToken(), null).then(response => {
+    function Disable(ID) {
+        oCall.cenisFetch("PUT", `Classroom/EnableDisable${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro desactivado correctamente.")
                 GetAll();
@@ -124,7 +125,7 @@ function Salones() {
     }
 
     function Activate(ID) {
-        oCall.cenisFetch("PUT", `Classroom/${ID}`, getToken(), null).then(response => {
+        oCall.cenisFetch("PUT", `Classroom/EnableDisable${ID}`, getToken(), null).then(response => {
             if (response.status === 200) {
                 SuccessAlert("Registro activado correctamente.");
                 GetAll();
@@ -157,21 +158,19 @@ function Salones() {
         });
     };
 
-    function validateUser(){
-        let token = getToken();
-        if(token === "" || token === null || token === undefined){
-            router.push("/")
-        }
-    }
 
     useEffect(() => {
         GetAll();
         GetAllKeys();
-        validateUser();
+        validateUser(getToken());
     }, [])
 
     return (
         <>
+            <Head>
+                <title>Salones</title>
+                <link rel="icon" href="https://www.utmetropolitana.edu.mx/Publicaciones/recursos/BotonImagen/logo%20UTM-01.png" />
+            </Head>
             {loading ? <Loader /> :
                 <Layout>
                     <CustomModal
@@ -197,6 +196,22 @@ function Salones() {
                                 <form onSubmit={handleSubmit}>
                                     <div className="form-group">
                                         <label htmlFor="recipient-name" className="col-form-label">
+                                            Nombre:
+                                        </label>
+                                        <input type="text"
+                                            autoComplete='off'
+                                            maxLength={100}
+                                            onBlur={handleBlur}
+                                            onChange={handleChange}
+                                            value={values.nombre}
+                                            className={`form-control form-control-sm ${errors.nombre && touched.nombre ? 'is-invalid' : ''}`}
+                                            id="nombre"
+                                            name="nombre"
+                                        />
+                                        <div className="invalid-feedback">
+                                            {errors.nombre}
+                                        </div>
+                                        <label htmlFor="recipient-name" className="col-form-label">
                                             Descripción:
                                         </label>
                                         <input type="text"
@@ -213,7 +228,7 @@ function Salones() {
                                             {errors.descripcion}
                                         </div>
                                         <label htmlFor="recipient-name" className="col-form-label">
-                                            Rol:
+                                            Llave:
                                         </label>
                                         <select
                                             onBlur={handleBlur}
@@ -267,6 +282,7 @@ function Salones() {
                             <table className="table">
                                 <thead>
                                     <tr>
+                                        <th>Nombre</th>
                                         <th>Descripcion</th>
                                         <th>Llave</th>
                                         <th>Estatus</th>
@@ -282,6 +298,7 @@ function Salones() {
                                         salones.map((salon, index) => {
                                             return (
                                                 <tr key={index}>
+                                                    <td>{salon.nombre}</td>
                                                     <td>{salon.descripcion}</td>
                                                     <td>{salon.idKey}</td>
                                                     {
@@ -301,7 +318,7 @@ function Salones() {
                                                             <td>
                                                                 <div className="d-grid gap-2 d-md-flex justify-content-md">
                                                                     <a className='btn btn-primary' onClick={() => Edit(salon.idClassroom)}><BiEditAlt /></a>
-                                                                    <a className='btn btn-danger' onClick={() => Delete(salon.idClassroom)}><BiTrash /></a>
+                                                                    <a className='btn btn-danger' onClick={() => Disable(salon.idClassroom)}><BiTrash /></a>
                                                                 </div>
                                                             </td>
                                                     }
